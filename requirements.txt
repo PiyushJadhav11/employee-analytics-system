@@ -1,0 +1,8 @@
+pandas>=2.2
+numpy>=1.26
+Faker>=25.0
+mysql-connector-python>=9.0
+streamlit>=1.40
+plotly>=5.22
+python-dotenv>=1.0
+pytest>=8.0  # tests only
