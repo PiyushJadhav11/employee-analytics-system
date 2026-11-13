@@ -8,6 +8,8 @@
 -- =====================================================================
 USE hr_staging;
 
+SET SESSION sql_require_primary_key = 0;
+
 CREATE TABLE IF NOT EXISTS stg_departments (
     department_code  VARCHAR(20),
     department_name  VARCHAR(100),
