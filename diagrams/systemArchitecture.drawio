@@ -1,0 +1,237 @@
+<mxfile host="app.diagrams.net" modified="2026-11-19T10:30:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+  <diagram id="system-architecture" name="Enterprise System Architecture">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- TITLE BLOCK -->
+        <mxCell id="title" value="ENTERPRISE EMPLOYEE ANALYTICS &amp; DATA WAREHOUSE SYSTEM — SYSTEM ARCHITECTURE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="160" y="20" width="1600" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="High-Level End-to-End Solution Architecture: Streamlit UI, OOP Backend (DAL/Entities), MySQL OLTP, Stored Procedure ETL &amp; OLAP Star Schema (SCD Type 2)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#64748b;" vertex="1" parent="1">
+          <mxGeometry x="160" y="55" width="1600" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- CONTAINER 1: PRESENTATION & CLIENT LAYER -->
+        <mxCell id="c_presentation" value="PRESENTATION LAYER (STREAMLIT WEB APPLICATION &amp; CLOUD)" style="swimlane;startSize=30;fontSize=13;fontStyle=1;fillColor=#f8fafc;strokeColor=#0284c7;strokeWidth=2;fontColor=#0369a1;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="95" width="1800" height="190" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="actor_users" value="HR Team &amp; Executives&#xa;(End Users)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fillColor=#e0f2fe;strokeColor=#0284c7;" vertex="1" parent="c_presentation">
+          <mxGeometry x="40" y="60" width="35" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_cloud" value="Streamlit Community Cloud / Local Server&#xa;(Python 3.10+, Port 8501, Session State)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284c7;fontColor=#ffffff;fontStyle=1;strokeColor=#0369a1;fontSize=12;" vertex="1" parent="c_presentation">
+          <mxGeometry x="130" y="55" width="230" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ui_onboard" value="Onboard Employee&#xa;(onboard.py)&#xa;• New hire data entry&#xa;• Idempotent forms" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontSize=11;fontStyle=0;" vertex="1" parent="c_presentation">
+          <mxGeometry x="400" y="50" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ui_transfers" value="Transfers &amp; Promotions&#xa;(manage_employee.py)&#xa;• Dept / Role change&#xa;• Triggers SCD Type 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontSize=11;fontStyle=0;" vertex="1" parent="c_presentation">
+          <mxGeometry x="610" y="50" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ui_projects" value="Project Assignments&#xa;(projects.py)&#xa;• Project creation&#xa;• Allocation % &amp; dates" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontSize=11;fontStyle=0;" vertex="1" parent="c_presentation">
+          <mxGeometry x="820" y="50" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ui_reviews" value="Performance Reviews&#xa;(reviews.py)&#xa;• Annual rating / scores&#xa;• Reviewer linkage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontSize=11;fontStyle=0;" vertex="1" parent="c_presentation">
+          <mxGeometry x="1030" y="50" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ui_dashboards" value="Interactive Dashboards&#xa;(dashboard.py)&#xa;• YoY Performance Trends&#xa;• DENSE_RANK() Top Performers&#xa;• Attrition Risk &amp; Project Health" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontColor=#92400e;fontSize=11;fontStyle=1;" vertex="1" parent="c_presentation">
+          <mxGeometry x="1240" y="50" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ui_ops" value="ETL &amp; Data Ops Console&#xa;(data_ops.py)&#xa;• Trigger full/incremental ETL&#xa;• 51-Point Reconciliation views&#xa;• Audit execution history" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#334155;fontSize=11;fontStyle=0;" vertex="1" parent="c_presentation">
+          <mxGeometry x="1510" y="50" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- CONTAINER 2: PYTHON OOP BACKEND LAYER -->
+        <mxCell id="c_oop" value="PYTHON APPLICATION &amp; OOP DOMAIN LAYER (hr_analytics/)" style="swimlane;startSize=30;fontSize=13;fontStyle=1;fillColor=#f8fafc;strokeColor=#7c3aed;strokeWidth=2;fontColor=#6d28d9;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="315" width="1800" height="210" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oop_singleton" value="DatabaseConnection&#xa;(db_manager.py)&#xa;• Thread-safe Singleton Pattern&#xa;• MySQL Connection Pool&#xa;• Reconnect &amp; Context Managers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7c3aed;fontColor=#ffffff;fontStyle=1;strokeColor=#6d28d9;fontSize=11;" vertex="1" parent="c_oop">
+          <mxGeometry x="40" y="55" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oop_models" value="Entity Classes (Domain Models)&#xa;(models.py)&#xa;• Employee (age, hire date, invariants)&#xa;• Project (budget, timeline, status)&#xa;• Review (score, 1-4 rating, goals %)&#xa;• Self-validating properties &amp; exceptions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontColor=#4c1d95;fontSize=11;fontStyle=0;" vertex="1" parent="c_oop">
+          <mxGeometry x="300" y="55" width="260" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oop_dal" value="Data Access Layer (BaseManager Hierarchy)&#xa;(managers.py) — Inherits from DatabaseConnection&#xa;&#xa;• EmployeeManager: CRUD, Onboarding, Transfers, Sync to DW&#xa;• ProjectManager: Project lifecycle, Assignments, Over-allocation check&#xa;• ReviewManager: Score recording, Peer validation&#xa;• AnalyticsManager: Star schema aggregations, Window Function queries&#xa;• EtlManager &amp; ReconciliationManager: Pipeline orchestration &amp; audits" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#9333ea;fontColor=#581c87;fontSize=11;fontStyle=0;align=left;spacingLeft=15;" vertex="1" parent="c_oop">
+          <mxGeometry x="600" y="50" width="750" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oop_etl_runner" value="ETL Orchestration Engine&#xa;(etl.py &amp; scripts/run_etl.py)&#xa;• SqlScriptRunner delimiter parsing&#xa;• Step-by-step transaction handling&#xa;• Batch pipeline runner" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontColor=#4c1d95;fontSize=11;fontStyle=0;" vertex="1" parent="c_oop">
+          <mxGeometry x="1390" y="55" width="360" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- CONTAINER 3: DATA SYNTHESIS & INGESTION -->
+        <mxCell id="c_synthesis" value="DATA SOURCING, SYNTHESIS &amp; STAGING PIPELINE" style="swimlane;startSize=30;fontSize=13;fontStyle=1;fillColor=#f8fafc;strokeColor=#059669;strokeWidth=2;fontColor=#047857;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="555" width="540" height="420" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="syn_ibm" value="IBM HR Analytics Dataset&#xa;(Raw CSV: ~1,470 rows)&#xa;Single point-in-time snapshot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;fontSize=11;fontStyle=1;" vertex="1" parent="c_synthesis">
+          <mxGeometry x="25" y="50" width="220" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="syn_engine" value="Data Synthesizer (scripts/data_synthesizer.py)&#xa;• BaseDatasetLoader: validates distributions&#xa;• EmployeeScaler: bootstrap sample &amp; Faker (100,000+ rows)&#xa;• HistoryEngineer: backward temporal simulation (SCD2)&#xa;• ProjectSynthesizer: 250+ enterprise projects&#xa;• AssignmentSynthesizer: timeline-bound staffing&#xa;• ReviewSynthesizer: 800,000+ historical reviews&#xa;• DirtyDataInjector: introduces staging dirt (dupes, typos)&#xa;• CsvExporter: atomic write with _manifest.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#10b981;fontColor=#064e3b;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="c_synthesis">
+          <mxGeometry x="25" y="130" width="490" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="syn_manifest" value="Synthetic CSVs + Checksum Manifest&#xa;data/synthetic/*.csv &amp; _manifest.json&#xa;818,500+ records generated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;fontSize=11;fontStyle=0;" vertex="1" parent="c_synthesis">
+          <mxGeometry x="25" y="300" width="230" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="db_staging" value="hr_staging (MySQL Database)&#xa;• stg_employees&#xa;• stg_projects &amp; stg_assignments&#xa;• stg_reviews &amp; stg_engagement&#xa;• stg_rejected_records (Audit)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#10b981;strokeColor=#047857;fontColor=#ffffff;fontStyle=1;fontSize=11;" vertex="1" parent="c_synthesis">
+          <mxGeometry x="290" y="295" width="225" height="105" as="geometry"/>
+        </mxCell>
+
+        <!-- CONTAINER 4: OLTP & ETL STORED PROCEDURES -->
+        <mxCell id="c_oltp" value="RELATIONAL OLTP ENGINE &amp; ADVANCED SQL ETL" style="swimlane;startSize=30;fontSize=13;fontStyle=1;fillColor=#f8fafc;strokeColor=#2563eb;strokeWidth=2;fontColor=#1d4ed8;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="640" y="555" width="580" height="420" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="db_oltp" value="hr_oltp Database (3NF System of Record)&#xa;&#xa;• departments &amp; job_roles&#xa;• employees (Active record master)&#xa;• employee_engagement (Survey scales)&#xa;• employee_history (Versioned change history)&#xa;• projects &amp; assignments&#xa;• reviews (Performance ratings &amp; scores)&#xa;• idempotency_keys (Duplicate request shield)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#2563eb;strokeColor=#1d4ed8;fontColor=#ffffff;fontStyle=1;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="c_oltp">
+          <mxGeometry x="25" y="50" width="250" height="340" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sp_staging_to_oltp" value="Stored Procedure: sp_load_from_staging()&#xa;• CTE-based deduplication&#xa;• Regex cleaning of emails/dates&#xa;• Foreign key resolution&#xa;• Rejections logged with error reason&#xa;• Transactional COMMIT / ROLLBACK" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontColor=#1e3a8a;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="c_oltp">
+          <mxGeometry x="300" y="50" width="255" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sp_dw_etl" value="Advanced DW ETL Stored Procedures&#xa;(06_dw_etl_procedures.sql)&#xa;&#xa;• sp_load_dim_date (Calendar recursive CTE)&#xa;• sp_load_dim_department (Surrogate keys)&#xa;• sp_load_dim_project (Status &amp; budgets)&#xa;• sp_load_dim_employee (SCD Type 2 Logic:&#xa;   SHA2 hash diff, expire old row, create new)&#xa;• sp_load_fact_performance_reviews (Point-&#xa;   in-time SK join on review_date)&#xa;• sp_run_full_etl (Locking master pipeline)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#3b82f6;fontColor=#172554;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="c_oltp">
+          <mxGeometry x="300" y="170" width="255" height="220" as="geometry"/>
+        </mxCell>
+
+        <!-- CONTAINER 5: OLAP DATA WAREHOUSE & RECONCILIATION -->
+        <mxCell id="c_dw" value="OLAP DATA WAREHOUSE &amp; QUALITY FRAMEWORK (hr_dw)" style="swimlane;startSize=30;fontSize=13;fontStyle=1;fillColor=#f8fafc;strokeColor=#dc2626;strokeWidth=2;fontColor=#b91c1c;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="555" width="600" height="420" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="dw_schema" value="Star Schema Dimensional Model&#xa;&#xa;• Dim_Employee (SCD Type 2):&#xa;   employee_sk (PK), NK employee_id,&#xa;   start_date, end_date (9999-12-31), is_current&#xa;• Dim_Department: department_sk (PK)&#xa;• Dim_Project: project_sk (PK, -1=No project)&#xa;• Dim_Date: date_sk (YYYYMMDD, PK)&#xa;• Fact_PerformanceReviews:&#xa;   review_sk (PK), SKs, review_score, rating,&#xa;   goals_met_pct, score_change_vs_prev" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dc2626;strokeColor=#b91c1c;fontColor=#ffffff;fontStyle=1;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="c_dw">
+          <mxGeometry x="30" y="50" width="270" height="340" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="dw_views" value="Analytics Views (Window Functions)&#xa;(07_analytics_views.sql)&#xa;&#xa;• vw_yoy_performance: LAG() YoY trend&#xa;• vw_top_performers: DENSE_RANK() by dept&#xa;• vw_attrition_risk: satisfaction &amp; overtime&#xa;• vw_project_performance: budget &amp; scores" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#dc2626;fontColor=#7f1d1d;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="c_dw">
+          <mxGeometry x="330" y="50" width="240" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="dw_reconcile" value="51-Point Reconciliation Framework&#xa;(08_reconciliation.sql)&#xa;&#xa;• Stage 1: File vs Staging (checksums, counts)&#xa;• Stage 2: Staging vs OLTP (rejections, fingerprints)&#xa;• Stage 3: OLTP vs DW (orphan checks, totals)&#xa;• Stage 4: SCD2 Integrity (no gaps/overlaps,&#xa;   exactly 1 current flag per employee)&#xa;• Results logged to reconciliation_log" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef2f2;strokeColor=#ef4444;fontColor=#991b1b;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="c_dw">
+          <mxGeometry x="330" y="180" width="240" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="dw_audit" value="etl_audit_log &amp; reconciliation_log&#xa;Audit trail of runs, row counts, durations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#dc2626;fontColor=#7f1d1d;fontSize=11;fontStyle=0;" vertex="1" parent="c_dw">
+          <mxGeometry x="330" y="345" width="240" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- CONTAINER 6: DEVOPS & INFRASTRUCTURE -->
+        <mxCell id="c_devops" value="VERSION CONTROL &amp; CLOUD DEPLOYMENT" style="swimlane;startSize=25;fontSize=12;fontStyle=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=1;fontColor=#334155;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1000" width="1800" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="git_flow" value="GitHub Repository &amp; Feature Branch Workflow&#xa;• main branch (production deployment)&#xa;• feature/database-design, feature/streamlit-dashboard&#xa;• Pull Requests with peer review &amp; CI unit testing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#1e293b;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="c_devops">
+          <mxGeometry x="60" y="40" width="450" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="env_config" value="Environment &amp; Configuration Management&#xa;• .env file / Streamlit Secrets: DB_HOST, DB_USER, DB_PASSWORD, DB_PORT&#xa;• Python requirements.txt &amp; modular package structure (hr_analytics/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#1e293b;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="c_devops">
+          <mxGeometry x="560" y="40" width="550" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cloud_deploy" value="Cloud Hosting &amp; Execution Environment&#xa;• Frontend: Streamlit Community Cloud (Public Web URL)&#xa;• Database: Managed MySQL 8.0+ Instance with SSL / TCP Pooling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#1e293b;fontSize=11;align=left;spacingLeft=15;" vertex="1" parent="c_devops">
+          <mxGeometry x="1160" y="40" width="580" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- CONNECTING ARROWS -->
+        <mxCell id="arr_user_cloud" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284c7;strokeWidth=2;" edge="1" parent="1" source="actor_users" target="box_cloud">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_forms_oop" value="Invokes DAL Managers" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#7c3aed;strokeWidth=2;fontSize=11;fontColor=#6d28d9;" edge="1" parent="1" source="ui_transfers" target="oop_dal">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="270"/>
+              <mxPoint x="880" y="270"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arr_dash_dw" value="Queries Star Schema &amp; Views" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d97706;strokeWidth=2;fontSize=11;fontColor=#b45309;" edge="1" parent="1" source="ui_dashboards" target="dw_views">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1420" y="260"/>
+              <mxPoint x="1420" y="470"/>
+              <mxPoint x="1500" y="470"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arr_ibm_syn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="syn_ibm" target="syn_engine">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_syn_files" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="syn_engine" target="syn_manifest">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_files_staging" value="scripts/load_staging.py" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=2;fontSize=10;fontColor=#047857;" edge="1" parent="1" source="syn_manifest" target="db_staging">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_staging_sp" value="Reads dirty CSV staging" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#047857;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="db_staging" target="sp_staging_to_oltp">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="900"/>
+              <mxPoint x="580" y="650"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arr_sp_oltp" value="Writes 3NF Cleansed Records" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563eb;strokeWidth=2;fontSize=10;fontColor=#1d4ed8;" edge="1" parent="1" source="sp_staging_to_oltp" target="db_oltp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_oop_oltp" value="CRUD Operations (Pool Borrowing)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563eb;strokeWidth=2;fontSize=10;fontColor=#1d4ed8;" edge="1" parent="1" source="oop_dal" target="db_oltp">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="490"/>
+              <mxPoint x="750" y="650"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arr_oltp_dw_sp" value="Source for ETL Procedures" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563eb;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="db_oltp" target="sp_dw_etl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_dw_sp_star" value="Loads Dimensions &amp; Facts" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#dc2626;strokeWidth=2;fontSize=10;fontColor=#b91c1c;" edge="1" parent="1" source="sp_dw_etl" target="dw_schema">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_sync_scd2" value="Direct SCD2 sync trigger (sp_load_dim_employee)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9333ea;strokeWidth=2;strokeDashArray=3 3;fontSize=10;fontColor=#6d28d9;" edge="1" parent="1" source="oop_dal" target="sp_dw_etl">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1100" y="490"/>
+              <mxPoint x="1100" y="700"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arr_reconcile_check" value="Cross-Schema 51 Checks" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ef4444;strokeWidth=2;strokeDashArray=3 3;fontSize=10;fontColor=#b91c1c;" edge="1" parent="1" source="dw_reconcile" target="db_oltp">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1400" y="990"/>
+              <mxPoint x="800" y="990"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
