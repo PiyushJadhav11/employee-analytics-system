@@ -11,10 +11,19 @@ import streamlit as st
 from app_pages.common import apply_theme
 
 
+# ---------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
 )
+
+
+# ---------------------------------------------------------------------
+# Page configuration
+# ---------------------------------------------------------------------
 
 st.set_page_config(
     page_title="Enterprise Workforce Analytics",
@@ -30,7 +39,53 @@ apply_theme()
 # Navigation configuration
 # ---------------------------------------------------------------------
 
+# Register login explicitly. Streamlit can only switch to pages
+# registered through st.navigation().
+
+login_page = st.Page(
+    "app_pages/login.py",
+    title="Login",
+    icon="🔐",
+    url_path="login",
+)
+
+change_password_page = st.Page(
+    "app_pages/change_password.py",
+    title="Change Password",
+    icon="🔑",
+    url_path="change-password",
+)
+
+self_profile_page = st.Page(
+    "app_pages/self_profile.py",
+    title="My Profile",
+    icon="👤",
+    url_path="my-profile",
+)
+
+admin_page = st.Page(
+    "app_pages/admin.py",
+    title="Administration",
+    icon="🛡️",
+    url_path="admin",
+)
+
+department_dashboard_page = st.Page(
+    "app_pages/department_dashboard.py",
+    title="Department Dashboard",
+    icon="📈",
+    url_path="department-dashboard",
+)
+
+
 pages = {
+    "ACCOUNT": [
+        login_page,
+        change_password_page,
+        self_profile_page,
+        admin_page,
+    ],
+
     "OVERVIEW": [
         st.Page(
             "app_pages/home.py",
@@ -43,7 +98,9 @@ pages = {
             title="Workforce Intelligence",
             icon="📊",
         ),
+        department_dashboard_page,
     ],
+
     "WORKFORCE MANAGEMENT": [
         st.Page(
             "app_pages/onboard.py",
@@ -66,6 +123,7 @@ pages = {
             icon="⭐",
         ),
     ],
+
     "DATA ENGINEERING": [
         st.Page(
             "app_pages/data_ops.py",
@@ -91,6 +149,7 @@ navigation = st.navigation(
 # ---------------------------------------------------------------------
 
 with st.sidebar:
+
     st.html("""
     <div style="
         padding: 15px 12px 18px 12px;
@@ -153,8 +212,6 @@ with st.sidebar:
     </div>
     """)
 
-
-    # Sidebar footer
     st.html("""
     <div style="
         margin-top: 22px;
