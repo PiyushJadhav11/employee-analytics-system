@@ -136,7 +136,7 @@ class LookupManager(BaseManager):
         return self.fetch_df(sql + " WHERE j.department_id = %s ORDER BY j.role_name", (department_id,))
 
     @handles_errors("search employees")
-    def search_employees(self, term: str = "", active_only: bool = True, limit: int = 50) -> pd.DataFrame:
+    def search_employees(self, term: str = "", active_only: bool = True, limit: int = 50, **kwargs) -> pd.DataFrame:
         like = f"%{term.strip()}%"
         sql = """
             SELECT e.employee_id, e.employee_number, CONCAT(e.first_name, ' ', e.last_name) AS full_name,
