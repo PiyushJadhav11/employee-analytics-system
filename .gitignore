@@ -4,6 +4,6 @@ __pycache__/
 .env
 .streamlit/secrets.toml
 data/raw/*.csv
-data/synthetic/
+data/synthetic/*.csv
 .DS_Store
 
