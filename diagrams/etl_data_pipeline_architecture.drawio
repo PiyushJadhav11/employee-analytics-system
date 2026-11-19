@@ -1,0 +1,221 @@
+<mxfile host="app.diagrams.net" modified="2026-11-19T10:35:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+  <diagram id="etl-pipeline-scd2" name="ETL Data Pipeline &amp; SCD Type 2 Flow">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- HEADER -->
+        <mxCell id="etl_title" value="ETL DATA PIPELINE &amp; SCD TYPE 2 LIFECYCLE ARCHITECTURE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="160" y="20" width="1600" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="etl_subtitle" value="Detailed Data Flow: Synthesis &amp; Scaling (100k+) → Staging Cleansing → OLTP Normalization → SCD Type 2 Dimensional Engine → Fact Resolution → 51 Reconciliation Audits" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#64748b;" vertex="1" parent="1">
+          <mxGeometry x="160" y="55" width="1600" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 1: DATA SOURCING & SYNTHESIS -->
+        <mxCell id="lane_stage1" value="PHASE 1: SYNTHESIS &amp; HISTORICAL SCD2 MODELING (scripts/data_synthesizer.py)" style="swimlane;startSize=28;fontSize=12;fontStyle=1;fillColor=#ecfdf5;strokeColor=#059669;fontColor=#065f46;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="50" y="95" width="560" height="270" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_raw_ibm" value="IBM HR Dataset&#xa;(1,470 rows snapshot)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#059669;fontSize=11;fontStyle=1;" vertex="1" parent="lane_stage1">
+          <mxGeometry x="20" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_scaler" value="EmployeeScaler (Bootstrapping)&#xa;• Resamples with replacement&#xa;• Faker identity (names, emails)&#xa;• Volume scaled to 100,000+ employees" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage1">
+          <mxGeometry x="220" y="35" width="320" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_hist_eng" value="HistoryEngineer (Temporal SCD2 Synthesis)&#xa;• Simulates backwards career progression:&#xa;   - 35% employees have historical transfers / promotions&#xa;   - Generates prior roles, salary grades &amp; effective dates&#xa;• Guarantees contiguous dates (start_date to end_date)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#10b981;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage1">
+          <mxGeometry x="20" y="115" width="520" height="75" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_dirty_inj" value="DirtyDataInjector &amp; CsvExporter&#xa;• Injects staging anomalies (case variation, nulls, whitespace)&#xa;• Atomic CSV write with SHA256 checksums in _manifest.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage1">
+          <mxGeometry x="20" y="200" width="520" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 2: STAGING & DATA CLEANSING -->
+        <mxCell id="lane_stage2" value="PHASE 2: STAGING &amp; CLEANING (hr_staging → sp_load_from_staging)" style="swimlane;startSize=28;fontSize=12;fontStyle=1;fillColor=#eff6ff;strokeColor=#2563eb;fontColor=#1e40af;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="640" y="95" width="590" height="270" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_staging_tables" value="Raw Landing Tables (hr_staging)&#xa;• stg_employees (raw strings)&#xa;• stg_reviews &amp; stg_projects&#xa;• stg_assignments &amp; stg_engagement" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#2563eb;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="lane_stage2">
+          <mxGeometry x="20" y="40" width="220" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_cleansing_cte" value="Cleansing &amp; Normalization (CTEs)&#xa;• CTE de-duplication: ROW_NUMBER()&#xa;• Email regex standardization&#xa;• Range checks (job_level 1-5, ratings)&#xa;• Date continuity validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage2">
+          <mxGeometry x="270" y="40" width="300" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_reject_router" value="Rejection Router &amp; Error Quarantine&#xa;• Valid rows → Transacted INSERT into hr_oltp (3NF)&#xa;• Corrupted / Invalid rows → Logged to stg_rejected_records&#xa;• Zero data loss: every incoming row accounted for" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ef4444;fontSize=10;align=left;spacingLeft=8;fontColor=#991b1b;" vertex="1" parent="lane_stage2">
+          <mxGeometry x="20" y="155" width="550" height="65" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_oltp_target" value="Target: hr_oltp (3NF Master Tables &amp; employee_history)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2563eb;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="lane_stage2">
+          <mxGeometry x="20" y="230" width="550" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 3: APPLICATION & SCD2 TRIGGER -->
+        <mxCell id="lane_stage3" value="PHASE 3: OPERATIONAL TRANSACTIONS &amp; SCD2 TRIGGER (UI / OOP)" style="swimlane;startSize=28;fontSize=12;fontStyle=1;fillColor=#faf5ff;strokeColor=#7c3aed;fontColor=#6b21a8;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="95" width="610" height="270" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_ui_trigger" value="Streamlit UI: manage_employee.py&#xa;HR User initiates position change:&#xa;• Department Transfer&#xa;• Role Promotion&#xa;• Salary Revision" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7c3aed;fontSize=10;fontStyle=0;align=left;spacingLeft=8;" vertex="1" parent="lane_stage3">
+          <mxGeometry x="20" y="40" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_mgr_tx" value="EmployeeManager.update_employee()&#xa;1. Validates business invariants via Employee entity&#xa;2. Opens atomic transaction in hr_oltp:&#xa;   - Updates hr_oltp.employees (current snapshot)&#xa;   - Appends version to hr_oltp.employee_history&#xa;3. Calls sp_load_dim_employee(emp_id)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#7c3aed;fontSize=10;align=left;spacingLeft=8;fontColor=#4c1d95;" vertex="1" parent="lane_stage3">
+          <mxGeometry x="260" y="40" width="330" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_idempotent_shield" value="Idempotency Protection (idempotency_keys)&#xa;• SHA256(form_payload + timestamp_window) prevents accidental double-click duplicate versions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9333ea;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage3">
+          <mxGeometry x="20" y="160" width="570" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_auto_sync" value="Real-time Warehouse Synchronization&#xa;• Direct stored procedure invocation keeps hr_dw in lockstep with OLTP operations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7c3aed;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="lane_stage3">
+          <mxGeometry x="20" y="215" width="570" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 4: SCD TYPE 2 DIMENSIONAL ENGINE (DETAILED STEP-BY-STEP) -->
+        <mxCell id="lane_stage4" value="PHASE 4: SCD TYPE 2 DIMENSIONAL ENGINE (hr_dw.sp_load_dim_employee)" style="swimlane;startSize=30;fontSize=13;fontStyle=1;fillColor=#fff1f2;strokeColor=#e11d48;fontColor=#9f1239;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="50" y="390" width="1820" height="350" as="geometry"/>
+        </mxCell>
+
+        <!-- STEP 4A: HASHING -->
+        <mxCell id="step_hash" value="Step 4.1: Dual Hash Calculation&#xa;&#xa;SCD1 Hash:&#xa;SHA2(first_name, last_name, email,&#xa;     marital_status, education, city,&#xa;     satisfaction, work_life_balance)&#xa;&#xa;SCD2 Hash:&#xa;SHA2(department_id, job_role_id,&#xa;     job_level, monthly_income)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#e11d48;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="lane_stage4">
+          <mxGeometry x="30" y="55" width="280" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- STEP 4B: CHANGE DETECTION -->
+        <mxCell id="step_detect" value="Step 4.2: Change Detection&#xa;&#xa;Query dim_employee WHERE&#xa;employee_id = @id AND is_current = 1&#xa;&#xa;• No record exists? → Brand new hire&#xa;• scd2_hash matches &amp; scd1_hash diff?&#xa;    → Type 1 Update only&#xa;• scd2_hash diff?&#xa;    → Type 2 Historical Transition" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe4e6;strokeColor=#e11d48;fontSize=10;align=left;spacingLeft=10;fontStyle=0;" vertex="1" parent="lane_stage4">
+          <mxGeometry x="350" y="55" width="280" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- STEP 4C: EXPIRATION -->
+        <mxCell id="step_expire" value="Step 4.3: Expire Active Version&#xa;&#xa;UPDATE dim_employee&#xa;SET end_date = DATE_SUB(@change_date, 1),&#xa;    is_current = FALSE,&#xa;    dw_updated_at = NOW()&#xa;WHERE employee_id = @id&#xa;  AND is_current = TRUE;&#xa;&#xa;[Historical snapshot preserved intact!]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#e11d48;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="lane_stage4">
+          <mxGeometry x="670" y="55" width="280" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- STEP 4D: NEW ROW INSERTION -->
+        <mxCell id="step_insert" value="Step 4.4: Insert New Version (SCD2)&#xa;&#xa;INSERT INTO dim_employee (&#xa;  employee_sk [Surrogate Key: AUTO],&#xa;  employee_id [Natural Key],&#xa;  department_name, job_role, level,&#xa;  monthly_income, salary_band,&#xa;  start_date = @change_date,&#xa;  end_date = '9999-12-31',&#xa;  is_current = TRUE,&#xa;  version_no = @prev_version + 1,&#xa;  change_reason = @reason&#xa;);" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe4e6;strokeColor=#e11d48;fontSize=10;align=left;spacingLeft=10;fontStyle=0;" vertex="1" parent="lane_stage4">
+          <mxGeometry x="990" y="55" width="300" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- STEP 4E: TYPE 1 OVERWRITE -->
+        <mxCell id="step_overwrite" value="Step 4.5: Type 1 In-Place Overwrite&#xa;&#xa;If ONLY Type 1 attributes changed:&#xa;UPDATE dim_employee&#xa;SET full_name = @new_name,&#xa;    email = @new_email,&#xa;    job_satisfaction = @new_sat&#xa;WHERE employee_id = @id;&#xa;&#xa;(Updates ALL historical versions&#xa;without creating surrogate keys)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#e11d48;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="lane_stage4">
+          <mxGeometry x="1330" y="55" width="280" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- TIMELINE VISUALIZATION -->
+        <mxCell id="box_timeline" value="SCD Type 2 Timeline Structure:&#xa;• Version 1: [start_date: 2021-01-01]  ──(Sales Rep)──►  [end_date: 2023-05-31, is_current: FALSE, SK: 1042]&#xa;• Version 2: [start_date: 2023-06-01]  ──(Senior Sales Rep)──►  [end_date: 2025-02-14, is_current: FALSE, SK: 3891]&#xa;• Version 3: [start_date: 2025-02-15]  ──(Sales Manager)──►  [end_date: 9999-12-31, is_current: TRUE, SK: 7420]  ← ACTIVE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#e11d48;fontSize=11;fontStyle=1;align=left;spacingLeft=20;fontColor=#881337;" vertex="1" parent="lane_stage4">
+          <mxGeometry x="30" y="260" width="1580" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 5: FACT TABLE LOADING -->
+        <mxCell id="lane_stage5" value="PHASE 5: FACT TABLE RESOLUTION (sp_load_fact_performance_reviews)" style="swimlane;startSize=28;fontSize=12;fontStyle=1;fillColor=#fdf4ff;strokeColor=#c026d3;fontColor=#86198f;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="50" y="760" width="880" height="320" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_fact_source" value="Source: hr_oltp.reviews&#xa;• review_id, employee_id, project_id,&#xa;  review_date, score, goals_met_pct" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c026d3;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage5">
+          <mxGeometry x="20" y="45" width="240" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_fact_sk_lookup" value="Point-in-Time Dimension SK Resolution&#xa;• employee_sk: JOIN dim_employee ON emp_id = emp_id&#xa;   AND r.review_date BETWEEN de.start_date AND de.end_date&#xa;• department_sk: JOIN dim_department ON code&#xa;• date_sk: CAST(DATE_FORMAT(review_date, '%Y%m%d') AS UNSIGNED)&#xa;• project_sk: COALESCE(dim_project.project_sk, -1) [-1 for no project]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fae8ff;strokeColor=#c026d3;fontSize=10;align=left;spacingLeft=10;fontColor=#701a75;" vertex="1" parent="lane_stage5">
+          <mxGeometry x="290" y="45" width="560" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_fact_measures" value="Measure Computations &amp; Window Functions&#xa;• review_score (DECIMAL 3,2), rating (1-4), goals_met_pct&#xa;• score_change_vs_prev: LAG(score) OVER (PARTITION BY employee_id ORDER BY review_date)&#xa;• is_top_rating: (rating = 4) flag for fast indexing&#xa;• Fact Target: hr_dw.fact_performance_reviews (Surrogate PK: review_sk)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c026d3;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="lane_stage5">
+          <mxGeometry x="20" y="175" width="830" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_fact_idemp" value="Idempotent: INSERT INTO ... ON DUPLICATE KEY UPDATE / NOT EXISTS check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c026d3;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="lane_stage5">
+          <mxGeometry x="20" y="275" width="830" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 6: RECONCILIATION & QUALITY AUDITING -->
+        <mxCell id="lane_stage6" value="PHASE 6: 51-POINT AUTOMATED RECONCILIATION AUDIT (08_reconciliation.sql)" style="swimlane;startSize=28;fontSize=12;fontStyle=1;fillColor=#f8fafc;strokeColor=#475569;fontColor=#1e293b;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="960" y="760" width="910" height="320" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_rec_csv" value="Hop 1: CSV vs Staging&#xa;• Row counts match manifest&#xa;• SHA256 checksum match&#xa;• Control sum: total monthly income" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#475569;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage6">
+          <mxGeometry x="20" y="45" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_rec_oltp" value="Hop 2: Staging vs OLTP&#xa;• Loaded rows + Rejected rows = Staging count&#xa;• Zero unaccounted dropouts&#xa;• Entity fingerprint match" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#475569;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage6">
+          <mxGeometry x="310" y="45" width="280" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_rec_dw" value="Hop 3: OLTP vs Data Warehouse&#xa;• Review counts match 1:1&#xa;• Total score control sum match&#xa;• Zero orphan foreign keys" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#475569;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="lane_stage6">
+          <mxGeometry x="620" y="45" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_rec_scd2" value="SCD Type 2 Structural Invariant Asserts&#xa;• Exactly one active row per employee (SUM(is_current) = 1)&#xa;• Zero timeline overlaps (start_date &lt; end_date, no overlapping date windows)&#xa;• Zero timeline gaps (version N end_date + 1 day = version N+1 start_date)&#xa;• Active row end_date = '9999-12-31'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=10;align=left;spacingLeft=10;fontStyle=1;fontColor=#0f172a;" vertex="1" parent="lane_stage6">
+          <mxGeometry x="20" y="145" width="860" height="85" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="box_rec_log" value="All 51 test results recorded into hr_dw.reconciliation_log with run_id, status (PASS/FAIL), actual vs expected values" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="lane_stage6">
+          <mxGeometry x="20" y="250" width="860" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- FLOW CONNECTORS -->
+        <mxCell id="arr_step1_step2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="box_dirty_inj" target="box_staging_tables">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_step2_step3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563eb;strokeWidth=2;" edge="1" parent="1" source="box_oltp_target" target="box_mgr_tx">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_step3_step4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#7c3aed;strokeWidth=2;" edge="1" parent="1" source="box_auto_sync" target="step_hash">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1560" y="375"/>
+              <mxPoint x="200" y="375"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arr_4a_4b" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e11d48;strokeWidth=2;" edge="1" parent="1" source="step_hash" target="step_detect">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_4b_4c" value="SCD2 Change" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e11d48;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="step_detect" target="step_expire">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_4c_4d" value="Insert New Version" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e11d48;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="step_expire" target="step_insert">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arr_4b_4e" value="SCD1 Only" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e11d48;strokeWidth=2;dashed=1;fontSize=10;" edge="1" parent="1" source="step_detect" target="step_overwrite">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="490" y="245"/>
+              <mxPoint x="1470" y="245"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arr_4d_fact" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c026d3;strokeWidth=2;" edge="1" parent="1" source="box_timeline" target="box_fact_sk_lookup">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="730"/>
+              <mxPoint x="570" y="790"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arr_fact_audit" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=2;" edge="1" parent="1" source="box_fact_idemp" target="box_rec_dw">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="930" y="1050"/>
+              <mxPoint x="930" y="735"/>
+              <mxPoint x="1710" y="735"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
