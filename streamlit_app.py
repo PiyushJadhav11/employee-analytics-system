@@ -8,7 +8,7 @@ import logging
 
 import streamlit as st
 
-from app_pages.common import apply_theme
+from app_pages.common import apply_theme, render_sidebar
 
 
 # ---------------------------------------------------------------------
@@ -252,5 +252,6 @@ with st.sidebar:
 # ---------------------------------------------------------------------
 # Run selected page
 # ---------------------------------------------------------------------
-
+if st.session_state.get("authenticated"):
+    render_sidebar()
 navigation.run()
